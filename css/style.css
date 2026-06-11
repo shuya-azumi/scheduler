@@ -1,0 +1,232 @@
+/* ===== 基本 ===== */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  background: #f0f2f5;
+  color: #1c2530;
+}
+.hidden { display: none !important; }
+
+/* ===== 参加画面 ===== */
+#join-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.card {
+  background: #fff;
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 24px;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .08);
+}
+.card h1 { margin: 0 0 4px; font-size: 22px; }
+.room-line { color: #6b7785; font-size: 13px; margin: 0 0 20px; }
+.room-line span { font-family: monospace; color: #2c3a4a; }
+.card label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+.card input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d4dae0;
+  border-radius: 10px;
+  font-size: 15px;
+}
+#role-select { display: flex; gap: 8px; }
+.role-btn {
+  flex: 1;
+  padding: 12px 4px;
+  border: 1.5px solid #d4dae0;
+  background: #fff;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: .15s;
+}
+.role-btn.selected { border-color: #2f80ed; background: #eaf2fe; color: #2f80ed; font-weight: 700; }
+.hint { color: #8a95a1; font-size: 12px; margin-top: 14px; }
+
+/* ===== ボタン共通 ===== */
+.primary {
+  width: 100%;
+  margin-top: 20px;
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  background: #2f80ed;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primary:disabled { background: #c2ccd6; cursor: not-allowed; }
+.primary.small { width: auto; margin: 0; padding: 10px 16px; font-size: 14px; }
+.ghost {
+  border: 1px solid #cdd5dd;
+  background: #fff;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ===== メイン画面 ===== */
+header {
+  background: #fff;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e4e9ee;
+}
+header strong { font-size: 16px; }
+.me-label { color: #6b7785; font-size: 13px; margin-left: 10px; }
+.banner {
+  background: #e6f6ec;
+  color: #1b7e3f;
+  font-weight: 700;
+  padding: 12px 18px;
+  text-align: center;
+  border-bottom: 1px solid #c4e8d2;
+}
+
+.layout {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  max-width: 1000px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+.panel {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  flex: 1;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
+}
+.panel h2 { margin: 0 0 12px; font-size: 15px; color: #38465a; }
+
+/* ===== 候補枠 ===== */
+.empty { color: #8a95a1; font-size: 13px; }
+.slot-card {
+  border: 1.5px solid #e1e7ed;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  transition: .15s;
+}
+.slot-card.all-ok { border-color: #34c759; background: #f1fbf4; }
+.slot-card.confirmed { border-color: #2f80ed; background: #eef4ff; }
+.slot-label { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.badge {
+  font-size: 11px;
+  background: #2f80ed;
+  color: #fff;
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.badge.ok { background: #34c759; }
+
+.vote-status { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.vote-chip {
+  font-size: 12px;
+  background: #f0f3f6;
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: #51606f;
+}
+.vote-btns { display: flex; gap: 6px; }
+.vote-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border: 1px solid #d4dae0;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.vote-btn.active { border-color: #2f80ed; background: #eaf2fe; font-weight: 700; }
+.confirm-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+  border: none;
+  border-radius: 8px;
+  background: #34c759;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.add-slot {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed #dde3e9;
+}
+.add-slot label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #51606f; }
+.add-slot input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d4dae0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* ===== チャット ===== */
+.chat-panel { display: flex; flex-direction: column; }
+#messages {
+  height: 380px;
+  overflow-y: auto;
+  border: 1px solid #eef1f4;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fafbfc;
+  margin-bottom: 10px;
+}
+.msg { margin-bottom: 8px; }
+.msg.system, .msg.confirm {
+  text-align: center;
+  font-size: 12px;
+  color: #8a95a1;
+  margin: 10px 0;
+}
+.msg.confirm { color: #1b7e3f; font-weight: 700; }
+.msg.bubble {
+  max-width: 80%;
+  background: #fff;
+  border: 1px solid #e6ebf0;
+  border-radius: 10px;
+  padding: 8px 11px;
+}
+.msg.bubble.mine { margin-left: auto; background: #eaf2fe; border-color: #cfe2fd; }
+.msg-name { font-size: 11px; color: #8a95a1; margin-bottom: 2px; }
+.role-tag {
+  background: #eef1f4;
+  border-radius: 4px;
+  padding: 0 5px;
+  margin-left: 3px;
+}
+.msg-text { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+
+.chat-input { display: flex; gap: 8px; }
+.chat-input input {
+  flex: 1;
+  padding: 11px;
+  border: 1px solid #d4dae0;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* ===== スマホ ===== */
+@media (max-width: 720px) {
+  .layout { flex-direction: column; }
+  #messages { height: 300px; }
+}
