@@ -1,12 +1,65 @@
+/* =========================================================
+   面接日程調整 UI
+   方針：ニュートラル基調 ＋ アクセントは「緑」1色だけ。
+   ・緑   = 参加可 / 全員参加可（合意＝唯一の信号色）
+   ・黒(インク) = 確定の強調
+   ・グレー = 不可（沈める）
+   絵文字は使わず、文字と色で状態を語る。装飾的な影・glow・
+   スケール演出は持たず、フラットでヘアライン主体に保つ。
+   ========================================================= */
+
+/* ===== デザイントークン（色・余白・角丸はここに集約）===== */
+:root {
+  /* 面・地・線 */
+  --bg:        #f7f7f8;
+  --surface:   #ffffff;
+  --line:      #e6e6e9;
+  --line-soft: #f0f0f2;
+  --fill:      #f4f4f5;   /* 操作要素の控えめな下地 */
+  --fill-hover:#ececee;
+
+  /* 文字（ニア・ブラックのニュートラル）*/
+  --ink:       #18181b;   /* 主要文字・主ボタン・確定の強調 */
+  --text:      #27272a;
+  --muted:     #71717a;
+  --faint:     #a1a1aa;
+
+  /* アクセント＝緑（唯一の信号色：参加可 / 全員参加可）*/
+  --accent:      #15803d;
+  --accent-weak: #eef6f1;
+  --accent-line: #cde6d6;
+
+  /* 役割カラー（3者を一目で判別。アイコン＆役割タグに使用）*/
+  --role-candidate: #16a34a;  /* 求職者＝グリーン */
+  --role-agent:     #ea580c;  /* エージェント＝オレンジ */
+  --role-facility:  #dc2626;  /* 事業所＝レッド */
+
+  /* 余白スケール（8px基準）*/
+  --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+
+  /* 角丸（一定の控えめスケール）*/
+  --r-sm: 6px; --r: 8px; --r-lg: 12px;
+
+  /* 影（参加画面カードにだけ使う最小限）*/
+  --shadow-card: 0 1px 2px rgba(0,0,0,.04), 0 6px 24px rgba(0,0,0,.05);
+}
+
 /* ===== 基本 ===== */
 * { box-sizing: border-box; }
 body {
   margin: 0;
   font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
-  background: #f0f2f5;
-  color: #1c2530;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
 }
 .hidden { display: none !important; }
+
+/* 日時など数字は等幅で桁を揃える */
+.slot-label, .room-line span, .time-row select, input[type="date"] {
+  font-variant-numeric: tabular-nums;
+}
 
 /* ===== 参加画面 ===== */
 #join-screen {
@@ -14,219 +67,507 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: var(--s4);
 }
 .card {
-  background: #fff;
+  background: var(--surface);
   width: 100%;
-  max-width: 420px;
-  padding: 28px 24px;
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, .08);
+  max-width: 400px;
+  padding: var(--s6) var(--s5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
 }
-.card h1 { margin: 0 0 4px; font-size: 22px; }
-.room-line { color: #6b7785; font-size: 13px; margin: 0 0 20px; }
-.room-line span { font-family: monospace; color: #2c3a4a; }
-.card label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+/* ブランド（アプリ名＋アイコン）*/
+.brand { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s2); }
+.brand-icon {
+  flex: none;
+  width: 48px; height: 48px;
+  border-radius: 13px;
+  background: var(--ink);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.brand-icon svg { width: 28px; height: 28px; }
+.card h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+
+/* ヘッダーのブランド（小）*/
+.brand-mini { display: flex; align-items: center; gap: var(--s2); }
+.brand-icon--sm { width: 32px; height: 32px; border-radius: 9px; }
+.brand-icon--sm svg { width: 19px; height: 19px; }
+.room-line { color: var(--muted); font-size: 12px; margin: 0 0 var(--s5); }
+.room-line span {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color: var(--text);
+  background: var(--fill);
+  padding: 1px 6px;
+  border-radius: var(--r-sm);
+}
+.card label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin: var(--s4) 0 var(--s2);
+}
 .card input[type="text"] {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #d4dae0;
-  border-radius: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   font-size: 15px;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
 }
-#role-select { display: flex; gap: 8px; }
+.card input[type="text"]:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(24,24,27,.08);
+}
+
+#role-select { display: flex; gap: var(--s2); }
 .role-btn {
   flex: 1;
-  padding: 12px 4px;
-  border: 1.5px solid #d4dae0;
-  background: #fff;
-  border-radius: 10px;
-  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 4px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--r);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
   cursor: pointer;
-  transition: .15s;
+  transition: border-color .15s, background .15s;
 }
-.role-btn.selected { border-color: #2f80ed; background: #eaf2fe; color: #2f80ed; font-weight: 700; }
-.hint { color: #8a95a1; font-size: 12px; margin-top: 14px; }
+.role-btn .role-ico { width: 26px; height: 26px; }
+.role-btn:hover { background: var(--fill); }
+.role-btn.selected {
+  border-color: var(--ink);
+  color: var(--ink);
+  font-weight: 600;
+}
+.hint { color: var(--faint); font-size: 12px; margin-top: var(--s4); }
 
 /* ===== ボタン共通 ===== */
 .primary {
   width: 100%;
-  margin-top: 20px;
-  padding: 13px;
+  margin-top: var(--s5);
+  padding: 12px;
   border: none;
-  border-radius: 10px;
-  background: #2f80ed;
+  border-radius: var(--r);
+  background: var(--ink);
   color: #fff;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -.01em;
   cursor: pointer;
+  transition: background .15s, opacity .15s;
 }
-.primary:disabled { background: #c2ccd6; cursor: not-allowed; }
-.primary.small { width: auto; margin: 0; padding: 10px 16px; font-size: 14px; }
+.primary:hover { background: #000; }
+.primary:disabled { background: var(--line); color: var(--faint); cursor: not-allowed; }
+.primary.small { width: auto; margin: 0; padding: 9px 16px; font-size: 14px; }
+
 .ghost {
-  border: 1px solid #cdd5dd;
-  background: #fff;
-  border-radius: 8px;
-  padding: 7px 12px;
-  font-size: 13px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--r);
+  padding: 8px 14px;
+  font-size: 14px;
+  color: var(--text);
   cursor: pointer;
+  transition: background .15s, border-color .15s;
 }
+.ghost:hover { background: var(--fill); }
 
 /* ===== メイン画面 ===== */
+/* ヘッダーは全幅の白バー。中身だけを下のレイアウトと同じ枠に揃える */
 header {
-  background: #fff;
-  padding: 12px 18px;
+  background: var(--surface);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  /* 左＝「候補日時」の文字位置（layout余白＋panel余白）、右＝やりとり枠の右端（layout余白） */
+  padding: 0 var(--s5) 0 calc(var(--s5) * 2);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #e4e9ee;
 }
-header strong { font-size: 16px; }
-.me-label { color: #6b7785; font-size: 13px; margin-left: 10px; }
-.banner {
-  background: #e6f6ec;
-  color: #1b7e3f;
+header strong {
+  font-size: 18px;
   font-weight: 700;
-  padding: 12px 18px;
+  letter-spacing: -.01em;
+  color: var(--ink);
+}
+.header-actions { display: flex; gap: var(--s2); }
+
+/* 役割アイコン（線SVG）。サイズは文脈ごとに指定、色は役割クラスで分ける */
+.role-ico { flex: none; width: 16px; height: 16px; vertical-align: middle; }
+
+/* 役割ごとの色（アイコン＝currentColor、役割タグの文字色にも使う）*/
+.role-candidate { color: var(--role-candidate); }
+.role-agent     { color: var(--role-agent); }
+.role-facility  { color: var(--role-facility); }
+
+/* あなた（誰の画面か）バー：候補日時の上に置き、パネル群を少し下げる */
+.me-bar {
+  max-width: 1040px;
+  margin: 0 auto;
+  /* 左を「候補日時」の文字位置に合わせ、タイトル／候補日時と縦に揃える */
+  padding: var(--s5) var(--s5) 0 calc(var(--s5) * 2);
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+.me-bar-cap { font-size: 13px; color: var(--muted); }
+.me-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 9px 7px 13px;
+}
+.me-label .me-name { font-weight: 700; }
+/* 役割は役割カラーのタグで強調（色は role-* クラスで付く）*/
+.me-label .me-role {
+  font-size: 13px;
+  font-weight: 700;
+  background: color-mix(in srgb, currentColor 13%, #fff);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+.me-label .role-ico { width: 19px; height: 19px; }
+
+/* 確定バナー：黒で静かに、しかし明確に */
+.banner {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  padding: 13px var(--s5);
   text-align: center;
-  border-bottom: 1px solid #c4e8d2;
 }
 
 .layout {
   display: flex;
-  gap: 16px;
-  padding: 16px;
-  max-width: 1000px;
+  gap: var(--s4);
+  padding: var(--s5);
+  max-width: 1040px;
   margin: 0 auto;
   align-items: flex-start;
 }
 .panel {
-  background: #fff;
-  border-radius: 14px;
-  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s5);
   flex: 1;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
 }
-.panel h2 { margin: 0 0 12px; font-size: 15px; color: #38465a; }
+.panel h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin: 0 0 var(--s4);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--line-soft);
+}
+/* 見出しの頭に緑のアクセントバー（少しメリハリを出す）*/
+.panel h2::before {
+  content: "";
+  width: 4px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--accent);
+}
 
 /* ===== 候補枠 ===== */
-.empty { color: #8a95a1; font-size: 13px; }
-.slot-card {
-  border: 1.5px solid #e1e7ed;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 10px;
-  transition: .15s;
+.empty {
+  color: var(--faint);
+  font-size: 13px;
+  text-align: center;
+  padding: var(--s5) var(--s3);
 }
-.slot-card.all-ok { border-color: #34c759; background: #f1fbf4; }
-.slot-card.confirmed { border-color: #2f80ed; background: #eef4ff; }
-.slot-label { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.slot-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s4);
+  margin-bottom: var(--s3);
+  background: var(--surface);
+  transition: border-color .15s, background .15s;
+}
+
+/* 全員参加可（合意）＝唯一の信号。淡い緑のトーン＋緑の枠 */
+.slot-card.all-ok {
+  border-color: var(--accent-line);
+  background: var(--accent-weak);
+}
+/* 確定済み＝黒の強調（バッジと連動） */
+.slot-card.confirmed {
+  border-color: var(--ink);
+}
+
+.slot-label {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  margin-bottom: var(--s3);
+}
 .badge {
+  display: inline-block;
   font-size: 11px;
-  background: #2f80ed;
+  font-weight: 600;
+  letter-spacing: 0;
+  background: var(--ink);     /* 確定＝黒 */
   color: #fff;
-  border-radius: 6px;
-  padding: 2px 7px;
-  margin-left: 4px;
+  border-radius: var(--r-sm);
+  padding: 2px 8px;
+  margin-left: var(--s2);
   vertical-align: middle;
 }
-.badge.ok { background: #34c759; }
-
-.vote-status { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.vote-chip {
-  font-size: 12px;
-  background: #f0f3f6;
-  border-radius: 6px;
-  padding: 3px 8px;
-  color: #51606f;
+.badge.ok {                   /* 全員参加可＝緑 */
+  background: var(--accent);
 }
-.vote-btns { display: flex; gap: 6px; }
+
+/* 参加者ごとの状態 */
+.vote-status { display: flex; flex-wrap: wrap; gap: var(--s2); margin-bottom: var(--s3); }
+.vote-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  background: var(--fill);
+  border-radius: var(--r-sm);
+  padding: 5px 11px;
+  color: var(--text);
+}
+.vote-chip .role-ico { width: 15px; height: 15px; }
+
+/* 自分の投票（2択：1=参加可=緑 / 2=不可=グレー）。
+   未選択は控えめな下地、選択で塗りつぶし。
+   JSは値クラスを付けないので並び順で色を割り当てる。 */
+.vote-btns { display: flex; gap: var(--s2); }
 .vote-btn {
   flex: 1;
-  padding: 8px 4px;
-  border: 1px solid #d4dae0;
-  background: #fff;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 10px 4px;
+  border: none;
+  border-radius: var(--r);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--fill);
   cursor: pointer;
+  transition: background .15s, color .15s;
 }
-.vote-btn.active { border-color: #2f80ed; background: #eaf2fe; font-weight: 700; }
+.vote-btn:hover { background: var(--fill-hover); }
+.vote-btn:nth-child(1).active { background: var(--accent); color: #fff; }  /* 参加可 */
+.vote-btn:nth-child(2).active { background: #3f3f46;       color: #fff; }  /* 不可 */
+
+/* 確定（エージェント）＝黒の主アクション */
 .confirm-btn {
   width: 100%;
-  margin-top: 10px;
-  padding: 9px;
+  margin-top: var(--s3);
+  padding: 10px;
   border: none;
-  border-radius: 8px;
-  background: #34c759;
+  border-radius: var(--r);
+  background: var(--ink);
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  transition: background .15s;
+}
+.confirm-btn:hover { background: #000; }
+
+/* 確定の取り消し＝控えめなセカンダリ */
+.unconfirm-btn {
+  width: 100%;
+  margin-top: var(--s3);
+  padding: 10px;
+  border: none;
+  border-radius: var(--r);
+  background: var(--fill);
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.unconfirm-btn:hover { background: var(--fill-hover); color: var(--text); }
+
+/* 枠追加フォーム（エージェント用）*/
+.add-slot {
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--line);
+}
+.add-slot label {
+  display: block;
   font-size: 13px;
+  font-weight: 500;
+  margin-bottom: var(--s2);
+  color: var(--muted);
+}
+.slot-form { margin-bottom: var(--s2); }
+
+.slot-form input[type="date"] {
+  width: auto;
+  min-width: 190px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-size: 16px;
+  background: var(--surface);
+  color: var(--text);
+  margin-bottom: var(--s3);
+}
+.slot-form input[type="date"]::-webkit-calendar-picker-indicator {
+  transform: scale(1.4);
+  margin-left: var(--s2);
   cursor: pointer;
 }
+.slot-form input[type="date"]:focus,
+.time-row select:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(24,24,27,.08);
+}
 
-.add-slot {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px dashed #dde3e9;
+.time-row { display: flex; align-items: center; gap: var(--s2); }
+.time-row select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  font-size: 15px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
 }
-.add-slot label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #51606f; }
-.add-slot input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #d4dae0;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
+.time-row span { color: var(--faint); }
 
 /* ===== チャット ===== */
 .chat-panel { display: flex; flex-direction: column; }
 #messages {
   height: 380px;
   overflow-y: auto;
-  border: 1px solid #eef1f4;
-  border-radius: 10px;
-  padding: 10px;
-  background: #fafbfc;
-  margin-bottom: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s4) var(--s3);
+  background: var(--surface);
+  margin-bottom: var(--s3);
 }
-.msg { margin-bottom: 8px; }
+.msg { margin-bottom: var(--s2); }
+
+/* システム / 確定の中央通知（フラット・テキストのみ）*/
 .msg.system, .msg.confirm {
   text-align: center;
   font-size: 12px;
-  color: #8a95a1;
-  margin: 10px 0;
+  color: var(--faint);
+  margin: var(--s4) 0;
 }
-.msg.confirm { color: #1b7e3f; font-weight: 700; }
+.msg.confirm { color: var(--ink); font-weight: 600; }
+
+/* バブル：相手＝薄いグレー、自分＝黒。色は最小限、角丸は一定 */
 .msg.bubble {
   max-width: 80%;
-  background: #fff;
-  border: 1px solid #e6ebf0;
-  border-radius: 10px;
-  padding: 8px 11px;
+  background: var(--fill);
+  border-radius: var(--r-lg);
+  padding: 8px 12px;
 }
-.msg.bubble.mine { margin-left: auto; background: #eaf2fe; border-color: #cfe2fd; }
-.msg-name { font-size: 11px; color: #8a95a1; margin-bottom: 2px; }
-.role-tag {
-  background: #eef1f4;
-  border-radius: 4px;
-  padding: 0 5px;
-  margin-left: 3px;
+.msg.bubble.mine {
+  margin-left: auto;
+  background: var(--ink);
 }
-.msg-text { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+.msg.bubble.mine .msg-name { color: rgba(255,255,255,.65); }
+.msg.bubble.mine .msg-text { color: #fff; }
+.msg.bubble.mine .role-tag { background: rgba(255,255,255,.16); color: #fff; }
 
-.chat-input { display: flex; gap: 8px; }
+.msg-name { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 3px; }
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0,0,0,.06);
+  color: var(--muted);
+  border-radius: var(--r-sm);
+  padding: 2px 7px;
+  margin-left: var(--s1);
+  font-size: 11px;
+  font-weight: 500;
+}
+.role-tag .role-ico { width: 13px; height: 13px; }
+.msg-text { font-size: 14px; line-height: 1.5; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+
+/* 定型文（クイック返信）：控えめなチップ */
+.quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+}
+.quick-chip {
+  border: none;
+  background: var(--fill);
+  border-radius: var(--r);
+  padding: 7px 12px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background .15s;
+}
+.quick-chip:hover { background: var(--fill-hover); }
+
+.chat-input { display: flex; gap: var(--s2); }
 .chat-input input {
   flex: 1;
-  padding: 11px;
-  border: 1px solid #d4dae0;
-  border-radius: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
   font-size: 14px;
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
+}
+.chat-input input:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(24,24,27,.08);
 }
 
 /* ===== スマホ ===== */
 @media (max-width: 720px) {
-  .layout { flex-direction: column; }
-  #messages { height: 300px; }
+  .layout { flex-direction: column; padding: var(--s3); gap: var(--s3); }
+  header { padding: 12px 0; }
+  .header-inner { padding: 0 var(--s3); }
+  .me-bar { padding: var(--s4) var(--s3) 0; }
+  .panel { padding: var(--s4); }
+  #messages { height: 46vh; min-height: 240px; }
+
+  .vote-btn { padding: 12px 4px; }
+  .role-btn { padding: 13px 4px; }
+  .primary { padding: 13px; }
+  .slot-form input[type="date"] { width: 100%; min-width: 0; }
 }

@@ -13,7 +13,12 @@
   <!-- ========== 参加画面（最初に出る）========== -->
   <div id="join-screen" class="screen">
     <div class="card">
-      <h1>面接 日程調整</h1>
+      <div class="brand">
+        <span class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 2.5v4M16 2.5v4"/><path d="M8.8 14.5l2.2 2.2 4.2-4.2"/></svg>
+        </span>
+        <h1>面接 日程調整</h1>
+      </div>
       <p class="room-line">ルーム：<span id="room-label"></span></p>
 
       <label>お名前</label>
@@ -21,9 +26,18 @@
 
       <label>あなたの立場</label>
       <div id="role-select">
-        <button class="role-btn" data-role="candidate">求職者</button>
-        <button class="role-btn" data-role="agent">エージェント</button>
-        <button class="role-btn" data-role="facility">事業所</button>
+        <button class="role-btn" data-role="candidate">
+          <svg class="role-ico role-candidate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5"/></svg>
+          <span>求職者</span>
+        </button>
+        <button class="role-btn" data-role="agent">
+          <svg class="role-ico role-agent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7.5" width="18" height="12" rx="2"/><path d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5"/><path d="M3 13h18"/></svg>
+          <span>エージェント</span>
+        </button>
+        <button class="role-btn" data-role="facility">
+          <svg class="role-ico role-facility" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="1"/><path d="M8.5 7.5h2M13.5 7.5h2M8.5 11.5h2M13.5 11.5h2"/><path d="M10 20.5v-3.5h4v3.5"/></svg>
+          <span>事業所</span>
+        </button>
       </div>
 
       <button id="join-btn" class="primary" disabled>このルームに参加する</button>
@@ -34,14 +48,27 @@
   <!-- ========== メイン画面（参加後に出る）========== -->
   <div id="main-screen" class="screen hidden">
     <header>
-      <div>
-        <strong id="main-title">面接 日程調整</strong>
-        <span id="me-label" class="me-label"></span>
+      <div class="header-inner">
+        <div class="brand-mini">
+          <span class="brand-icon brand-icon--sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18"/><path d="M8 2.5v4M16 2.5v4"/><path d="M8.8 14.5l2.2 2.2 4.2-4.2"/></svg>
+          </span>
+          <strong id="main-title">面接 日程調整</strong>
+        </div>
+        <div class="header-actions">
+          <button id="copy-url" class="ghost">招待URLをコピー</button>
+          <button id="leave-btn" class="ghost">退出（入り直す）</button>
+        </div>
       </div>
-      <button id="copy-url" class="ghost">招待URLをコピー</button>
     </header>
 
     <div id="confirmed-banner" class="banner hidden"></div>
+
+    <!-- あなた（誰の画面か）を候補日時の上に明示 -->
+    <div class="me-bar">
+      <span class="me-bar-cap">あなた</span>
+      <span id="me-label" class="me-label"></span>
+    </div>
 
     <div class="layout">
       <!-- 左：候補枠パネル -->
@@ -52,8 +79,15 @@
         <!-- エージェントだけに表示される枠追加フォーム -->
         <div id="add-slot-box" class="add-slot hidden">
           <label>候補を追加（エージェント用）</label>
-          <input type="text" id="slot-label" placeholder="例：6/16(月) 13:00〜14:00">
-          <button id="add-slot-btn" class="primary small">＋ 候補を追加</button>
+          <div class="slot-form">
+            <input type="date" id="slot-date">
+            <div class="time-row">
+              <select id="slot-start"></select>
+              <span>〜</span>
+              <select id="slot-end"></select>
+            </div>
+          </div>
+          <button id="add-slot-btn" class="primary small">候補を追加</button>
         </div>
       </section>
 
@@ -61,6 +95,7 @@
       <section class="panel chat-panel">
         <h2>やりとり</h2>
         <div id="messages"></div>
+        <div id="quick-replies" class="quick-replies"></div>
         <div class="chat-input">
           <input type="text" id="chat-text" placeholder="メッセージを入力…">
           <button id="send-btn" class="primary small">送信</button>
@@ -72,299 +107,8 @@
   <!-- ===== jQuery（講義と同じ）===== -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
-  <!-- ===== アプリ本体 ===== -->
-  <script type="module">
-    // --- Firebase v9 モジュール読み込み（講義と同じCDN）---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
-    import {
-      getDatabase, ref, push, set, update, onValue, onChildAdded
-    } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
-
-    // ========================================================
-    // ★ここに自分の Firebase の設定を貼り付けてください★
-    //   Firebaseコンソール →「プロジェクトの設定」→「マイアプリ」で取得
-    //   ※Realtime Database を作成し、ルールを一旦テストモード
-    //     （ "読み取り/書き込み" を許可）にしておくこと
-    // ========================================================
-    const firebaseConfig = {
-      apiKey: "AIzaSyBSdOz97Zs5T0Z1nAxePtJJzDXBRgDb-_8",
-      authDomain: "scheduler-be973.firebaseapp.com",
-      databaseURL: "https://scheduler-be973-default-rtdb.firebaseio.com",
-      projectId: "scheduler-be973",
-      storageBucket: "scheduler-be973.firebasestorage.app",
-      messagingSenderId: "11052609379",
-      appId: "1:11052609379:web:fff3005e3846919d9fad56"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // --- 役割の表示名 ---
-    const ROLE_LABEL = { candidate: "求職者", agent: "エージェント", facility: "事業所" };
-
-    // --- ルームIDを URL から取得。無ければ作ってURLに付ける ---
-    const params = new URLSearchParams(location.search);
-    let roomId = params.get("room");
-    if (!roomId) {
-      roomId = "room_" + Math.random().toString(36).slice(2, 9);
-      params.set("room", roomId);
-      history.replaceState(null, "", location.pathname + "?" + params.toString());
-    }
-    $("#room-label").text(roomId);
-
-    // --- このルーム配下への参照 ---
-    const roomRef = ref(db, "rooms/" + roomId);
-    const infoRef = ref(db, "rooms/" + roomId + "/info");
-    const membersRef = ref(db, "rooms/" + roomId + "/members");
-    const slotsRef = ref(db, "rooms/" + roomId + "/slots");
-    const votesRef = ref(db, "rooms/" + roomId + "/votes");
-    const messagesRef = ref(db, "rooms/" + roomId + "/messages");
-
-    // --- 画面に保持しておく最新データ ---
-    let me = null;                 // { id, name, role }
-    let info = {};                 // info ノード
-    let members = {};              // members ノード
-    let slots = {};                // slots ノード
-    let votes = {};                // votes ノード
-
-    // ========== 参加画面の操作 ==========
-    let selectedRole = null;
-
-    $(".role-btn").on("click", function () {
-      selectedRole = $(this).data("role");
-      $(".role-btn").removeClass("selected");
-      $(this).addClass("selected");
-      refreshJoinBtn();
-    });
-    $("#join-name").on("input", refreshJoinBtn);
-    function refreshJoinBtn() {
-      const ok = $("#join-name").val().trim() !== "" && selectedRole;
-      $("#join-btn").prop("disabled", !ok);
-    }
-
-    // 一度参加した人は localStorage で記憶（リロードしても二重参加しない）
-    const savedKey = "scheduler_member_" + roomId;
-    const saved = localStorage.getItem(savedKey);
-    if (saved) {
-      me = JSON.parse(saved);
-      enterMainScreen();
-    }
-
-    $("#join-btn").on("click", function () {
-      const name = $("#join-name").val().trim();
-      // ① ルーム参加 = members に push
-      const newMemberRef = push(membersRef);
-      const memberId = newMemberRef.key;
-      set(newMemberRef, { name: name, role: selectedRole });
-
-      me = { id: memberId, name: name, role: selectedRole };
-      localStorage.setItem(savedKey, JSON.stringify(me));
-
-      // タイトルがまだ無ければ初期化（最初に入った人が作る）
-      onValueOnce(infoRef, (val) => {
-        if (!val) {
-          set(infoRef, {
-            title: "面接 日程調整",
-            status: "adjusting",
-            confirmedSlotId: "",
-            createdAt: Date.now()
-          });
-        }
-      });
-
-      // 参加メッセージを流す（type=system）
-      pushMessage("system", name + "（" + ROLE_LABEL[selectedRole] + "）が参加しました", "");
-      enterMainScreen();
-    });
-
-    // ========== メイン画面へ ==========
-    function enterMainScreen() {
-      $("#join-screen").addClass("hidden");
-      $("#main-screen").removeClass("hidden");
-      $("#me-label").text(me.name + "（" + ROLE_LABEL[me.role] + "）");
-
-      // エージェントだけ「枠追加」フォームを表示
-      if (me.role === "agent") $("#add-slot-box").removeClass("hidden");
-
-      startListeners();
-    }
-
-    // ========== リアルタイム購読 ==========
-    function startListeners() {
-      // info / members / slots / votes は onValue（変化したらパネル再描画）
-      onValue(infoRef, (snap) => { info = snap.val() || {}; renderInfo(); renderSlots(); });
-      onValue(membersRef, (snap) => { members = snap.val() || {}; renderSlots(); });
-      onValue(slotsRef, (snap) => { slots = snap.val() || {}; renderSlots(); });
-      onValue(votesRef, (snap) => { votes = snap.val() || {}; renderSlots(); });
-
-      // messages は onChildAdded（新着を下に積む＝講義チャットと同じ）
-      onChildAdded(messagesRef, (snap) => {
-        const m = snap.val();
-        appendMessage(m);
-      });
-    }
-
-    // ========== 候補枠パネルの描画 ==========
-    function renderSlots() {
-      const $slots = $("#slots").empty();
-      const memberIds = Object.keys(members);
-      const slotIds = Object.keys(slots);
-
-      if (slotIds.length === 0) {
-        $slots.append('<p class="empty">まだ候補がありません。' +
-          (me.role === "agent" ? "下のフォームから追加してください。" : "エージェントの追加を待っています。") + '</p>');
-        return;
-      }
-
-      slotIds.forEach((slotId) => {
-        const slot = slots[slotId];
-        const slotVotes = votes[slotId] || {};
-
-        // この枠に「現在の参加者全員」が ok か？
-        const allOk = memberIds.length > 0 && memberIds.every(id => slotVotes[id] === "ok");
-        const isConfirmed = info.confirmedSlotId === slotId;
-
-        const $card = $('<div class="slot-card"></div>');
-        if (allOk) $card.addClass("all-ok");
-        if (isConfirmed) $card.addClass("confirmed");
-
-        $card.append('<div class="slot-label">' + escapeHtml(slot.label) +
-          (isConfirmed ? ' <span class="badge">確定</span>' : (allOk ? ' <span class="badge ok">全員OK</span>' : '')) +
-          '</div>');
-
-        // 参加者ごとの○×表示
-        const $status = $('<div class="vote-status"></div>');
-        memberIds.forEach(id => {
-          const v = slotVotes[id];
-          const mark = v === "ok" ? "⭕" : v === "ng" ? "❌" : v === "maybe" ? "🔺" : "・";
-          $status.append('<span class="vote-chip">' + escapeHtml(members[id].name) + ' ' + mark + '</span>');
-        });
-        $card.append($status);
-
-        // 自分の投票ボタン
-        const myVote = slotVotes[me.id];
-        const $btns = $('<div class="vote-btns"></div>');
-        $btns.append(voteBtn(slotId, "ok", "⭕ 行ける", myVote));
-        $btns.append(voteBtn(slotId, "maybe", "🔺 迷う", myVote));
-        $btns.append(voteBtn(slotId, "ng", "❌ 無理", myVote));
-        $card.append($btns);
-
-        // エージェントだけ「確定」ボタン
-        if (me.role === "agent" && info.status !== "confirmed") {
-          const $confirm = $('<button class="confirm-btn">この枠で確定する</button>');
-          $confirm.on("click", () => confirmSlot(slotId, slot.label));
-          $card.append($confirm);
-        }
-
-        $slots.append($card);
-      });
-    }
-
-    function voteBtn(slotId, value, text, myVote) {
-      const $b = $('<button class="vote-btn"></button>').text(text);
-      if (myVote === value) $b.addClass("active");
-      $b.on("click", () => vote(slotId, value));
-      return $b;
-    }
-
-    // ========== 操作：② 候補枠を出す（エージェント）==========
-    $("#add-slot-btn").on("click", function () {
-      const label = $("#slot-label").val().trim();
-      if (!label) return;
-      // slots に push
-      const newSlotRef = push(slotsRef);
-      set(newSlotRef, { label: label, start: "", end: "" });
-      pushMessage("system", "候補「" + label + "」が追加されました", newSlotRef.key);
-      $("#slot-label").val("");
-    });
-
-    // ========== 操作：③ 枠に○×（全員）==========
-    function vote(slotId, value) {
-      // (1) 状態を上書き：votes/{slotId}/{自分id} を set
-      set(ref(db, "rooms/" + roomId + "/votes/" + slotId + "/" + me.id), value);
-      // (2) チャットに流す：messages に push
-      const slot = slots[slotId];
-      const mark = value === "ok" ? "⭕ 行ける" : value === "maybe" ? "🔺 迷う" : "❌ 無理";
-      pushMessage("vote", "「" + (slot ? slot.label : "") + "」→ " + mark, slotId);
-    }
-
-    // ========== 操作：④ 確定（エージェント）==========
-    function confirmSlot(slotId, label) {
-      if (!confirm("「" + label + "」で確定します。よろしいですか？")) return;
-      // info を update
-      update(infoRef, { status: "confirmed", confirmedSlotId: slotId });
-      pushMessage("confirm", "✅ 面接日時が「" + label + "」に確定しました", slotId);
-    }
-
-    // ========== チャット ==========
-    $("#send-btn").on("click", sendText);
-    $("#chat-text").on("keydown", (e) => { if (e.keyCode === 13) sendText(); });
-    function sendText() {
-      const text = $("#chat-text").val().trim();
-      if (!text) return;
-      pushMessage("text", text, "");
-      $("#chat-text").val("");
-    }
-
-    function pushMessage(type, text, slotId) {
-      const newMsgRef = push(messagesRef);
-      set(newMsgRef, {
-        name: me ? me.name : "（システム）",
-        role: me ? me.role : "",
-        type: type,
-        text: text,
-        slotId: slotId || "",
-        createdAt: Date.now()
-      });
-    }
-
-    function appendMessage(m) {
-      const $box = $("#messages");
-      let html;
-      if (m.type === "system") {
-        html = '<div class="msg system">' + escapeHtml(m.text) + '</div>';
-      } else if (m.type === "confirm") {
-        html = '<div class="msg confirm">' + escapeHtml(m.text) + '</div>';
-      } else {
-        const mine = me && m.name === me.name ? " mine" : "";
-        const roleTag = m.role ? '<span class="role-tag">' + (ROLE_LABEL[m.role] || "") + '</span>' : '';
-        html = '<div class="msg bubble' + mine + '">' +
-          '<div class="msg-name">' + escapeHtml(m.name) + ' ' + roleTag + '</div>' +
-          '<div class="msg-text">' + escapeHtml(m.text) + '</div></div>';
-      }
-      $box.append(html);
-      $box.scrollTop($box[0].scrollHeight);
-    }
-
-    // ========== 確定バナー ==========
-    function renderInfo() {
-      $("#main-title").text(info.title || "面接 日程調整");
-      if (info.status === "confirmed" && info.confirmedSlotId && slots[info.confirmedSlotId]) {
-        $("#confirmed-banner")
-          .text("✅ 確定：" + slots[info.confirmedSlotId].label)
-          .removeClass("hidden");
-      } else {
-        $("#confirmed-banner").addClass("hidden");
-      }
-    }
-
-    // ========== 招待URLコピー ==========
-    $("#copy-url").on("click", function () {
-      navigator.clipboard.writeText(location.href)
-        .then(() => { $(this).text("コピーしました！"); setTimeout(() => $(this).text("招待URLをコピー"), 1500); });
-    });
-
-    // ========== 小道具 ==========
-    // info が存在するか1回だけ確認するヘルパー
-    function onValueOnce(r, cb) {
-      const unsub = onValue(r, (snap) => { cb(snap.val()); unsub(); });
-    }
-    // XSS対策：入力文字をそのままHTMLに入れない
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, c =>
-        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-    }
-  </script>
+  <!-- ===== アプリ本体（JavaScript は js/app.js に分離）===== -->
+  <script type="module" src="js/app.js"></script>
 </body>
 
 </html>
